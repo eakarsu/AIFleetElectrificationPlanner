@@ -84,6 +84,13 @@ export default function Sidebar({ features, activeFeature, onNavigate, user, onL
           <Bot size={18} />
           <span>AI Center</span>
         </div>
+        <div
+          className={`sidebar-item ${activeFeature === 'ai-planner' ? 'active' : ''}`}
+          onClick={() => onNavigate('ai-planner')}
+        >
+          <TrendingUp size={18} />
+          <span>AI Planner</span>
+        </div>
       </nav>
 
       <div className="sidebar-user">

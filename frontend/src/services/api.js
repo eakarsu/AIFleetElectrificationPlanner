@@ -56,6 +56,10 @@ const api = {
   getAIFeatures: () => request('/ai/features'),
   aiChat: (data) => request('/ai/chat', { method: 'POST', body: JSON.stringify(data) }),
 
+  // Generic AI POST helper for structured endpoints
+  // (cost-optimize, charging-network-plan, transition-roadmap, ...)
+  aiCustom: (path, data) => request(path, { method: 'POST', body: JSON.stringify(data) }),
+
   // Analytics
   getAnalytics: () => request('/analytics'),
 };
