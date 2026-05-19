@@ -8,6 +8,7 @@ import AICenter from './pages/AICenter';
 import AIPlanner from './pages/AIPlanner';
 
 import Batch03Features from './pages/Batch03Features';
+import CustomViewsPage from './pages/CustomViewsPage';
 
 const FEATURES = [
   { key: 'vehicles', label: 'Fleet Vehicles', resource: 'vehicles', icon: 'truck',
@@ -351,10 +352,18 @@ function App() {
           onLogout={handleLogout}
         />
         <div className="main-content">
-          {activeFeature === 'dashboard' && <Dashboard features={FEATURES} onNavigate={setActiveFeature} />}
-          {activeFeature === 'ai-center' && <AICenter />}
-          {activeFeature === 'ai-planner' && <AIPlanner />}
-          {feature && <CrudPage feature={feature} />}
+          <Routes>
+            <Route path="/custom-views" element={<CustomViewsPage />} />
+            <Route path="*" element={
+              <>
+                {activeFeature === 'dashboard' && <Dashboard features={FEATURES} onNavigate={setActiveFeature} />}
+                {activeFeature === 'ai-center' && <AICenter />}
+                {activeFeature === 'ai-planner' && <AIPlanner />}
+                {activeFeature === 'custom-views' && <CustomViewsPage />}
+                {feature && <CrudPage feature={feature} />}
+              </>
+            } />
+          </Routes>
         </div>
       </div>
     </BrowserRouter>

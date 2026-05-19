@@ -7,7 +7,7 @@ const rateLimiter = require('./middleware/rateLimiter');
 const app = express();
 const PORT = process.env.BACKEND_PORT || 4000;
 
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:3000', credentials: true }));
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -52,6 +52,9 @@ app.use('/api/sustainability-report', require('./routes/sustainabilityReport'));
 app.use('/api/financing-options', require('./routes/financingOptions'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+
+// Custom Views — 4 synthesized fleet-electrification endpoints
+app.use('/api/custom-views', require('./routes/customViews'));
 
 
 // === Batch 03 Gaps & Frontend Mounts ===
