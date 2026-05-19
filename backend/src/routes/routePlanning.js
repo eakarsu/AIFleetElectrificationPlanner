@@ -4,8 +4,20 @@ const { callOpenRouter } = require('../middleware/aiClient');
 
 router.get('/', auth, async (req, res) => {
   try {
-    const result = await req.app.locals.pool.query('SELECT * FROM route_plans ORDER BY created_at DESC');
-    res.json(result.rows);
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const offset = (page - 1) * limit;
+
+    const [dataResult, countResult] = await Promise.all([
+      req.app.locals.pool.query('SELECT * FROM route_plans ORDER BY created_at DESC LIMIT $1 OFFSET $2', [limit, offset]),
+      req.app.locals.pool.query('SELECT COUNT(*) FROM route_plans')
+    ]);
+
+    const total = parseInt(countResult.rows[0].count);
+    res.json({
+      data: dataResult.rows,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
+    });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -19,6 +31,9 @@ router.get('/:id', auth, async (req, res) => {
 
 router.post('/', auth, async (req, res) => {
   const { name, origin, destination, distance_miles, estimated_duration, vehicle_id, stops, status } = req.body;
+  if (!name || !origin || !destination) {
+    return res.status(400).json({ error: 'name, origin, and destination are required' });
+  }
   try {
     const result = await req.app.locals.pool.query(
       `INSERT INTO route_plans (name, origin, destination, distance_miles, estimated_duration, vehicle_id, stops, status)

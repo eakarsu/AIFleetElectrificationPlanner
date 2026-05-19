@@ -3,7 +3,7 @@ const https = require('https');
 async function callOpenRouter(prompt, systemPrompt = '') {
   return new Promise((resolve, reject) => {
     const data = JSON.stringify({
-      model: process.env.OPENROUTER_MODEL || 'anthropic/claude-haiku-4.5',
+      model: process.env.OPENROUTER_MODEL || 'anthropic/claude-3-5-sonnet-20241022',
       messages: [
         ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
         { role: 'user', content: prompt }

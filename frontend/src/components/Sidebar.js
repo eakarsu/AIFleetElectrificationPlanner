@@ -1,5 +1,5 @@
 import React from 'react';
-import { Truck, Map, Zap, DollarSign, Battery, Activity, TrendingUp, Leaf, Wrench, Users, PieChart, Shield, Navigation, LayoutDashboard, Bot, LogOut } from 'lucide-react';
+import { Truck, Map, Zap, DollarSign, Battery, Activity, TrendingUp, Leaf, Wrench, Users, PieChart, Shield, Navigation, LayoutDashboard, Bot, LogOut, Layers } from 'lucide-react';
 
 const ICONS = {
   'truck': Truck, 'map': Map, 'zap': Zap, 'dollar-sign': DollarSign,
@@ -76,6 +76,16 @@ export default function Sidebar({ features, activeFeature, onNavigate, user, onL
           );
         })}
 
+        <div className="sidebar-section">Custom Views</div>
+        <div
+          data-testid="sidebar-fleet-views"
+          className={`sidebar-item ${activeFeature === 'custom-views' ? 'active' : ''}`}
+          onClick={() => onNavigate('custom-views')}
+        >
+          <Layers size={18} />
+          <span>Fleet Views</span>
+        </div>
+
         <div className="sidebar-section">AI</div>
         <div
           className={`sidebar-item ${activeFeature === 'ai-center' ? 'active' : ''}`}
@@ -83,6 +93,13 @@ export default function Sidebar({ features, activeFeature, onNavigate, user, onL
         >
           <Bot size={18} />
           <span>AI Center</span>
+        </div>
+        <div
+          className={`sidebar-item ${activeFeature === 'ai-planner' ? 'active' : ''}`}
+          onClick={() => onNavigate('ai-planner')}
+        >
+          <TrendingUp size={18} />
+          <span>AI Planner</span>
         </div>
       </nav>
 

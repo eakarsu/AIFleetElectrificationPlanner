@@ -19,6 +19,9 @@ router.get('/:id', auth, async (req, res) => {
 
 router.post('/', auth, async (req, res) => {
   const { name, location, latitude, longitude, charger_type, power_kw, num_ports, status, cost_per_kwh, network } = req.body;
+  if (!name || !location || !charger_type) {
+    return res.status(400).json({ error: 'name, location, and charger_type are required' });
+  }
   try {
     const result = await req.app.locals.pool.query(
       `INSERT INTO charging_stations (name, location, latitude, longitude, charger_type, power_kw, num_ports, status, cost_per_kwh, network)

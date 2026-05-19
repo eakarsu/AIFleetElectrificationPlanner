@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:4000/api';
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
 
 function getHeaders() {
   const token = localStorage.getItem('token');
@@ -55,6 +55,10 @@ const api = {
   // AI Center
   getAIFeatures: () => request('/ai/features'),
   aiChat: (data) => request('/ai/chat', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Generic AI POST helper for structured endpoints
+  // (cost-optimize, charging-network-plan, transition-roadmap, ...)
+  aiCustom: (path, data) => request(path, { method: 'POST', body: JSON.stringify(data) }),
 
   // Analytics
   getAnalytics: () => request('/analytics'),
