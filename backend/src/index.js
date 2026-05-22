@@ -50,6 +50,7 @@ app.use('/api/driver-engagement', require('./routes/driverEngagement'));
 app.use('/api/supply-chain-analysis', require('./routes/supplyChainAnalysis'));
 app.use('/api/sustainability-report', require('./routes/sustainabilityReport'));
 app.use('/api/financing-options', require('./routes/financingOptions'));
+app.use('/api/charger-queue-forecast', require('./routes/chargerQueueForecast'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 

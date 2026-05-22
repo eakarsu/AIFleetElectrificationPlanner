@@ -10,6 +10,9 @@ import AIPlanner from './pages/AIPlanner';
 import Batch03Features from './pages/Batch03Features';
 import CustomViewsPage from './pages/CustomViewsPage';
 
+import CodexCustomVizFeature from './pages/CodexCustomVizFeature';
+import CodexOperationsFeature from './pages/CodexOperationsFeature';
+
 const FEATURES = [
   { key: 'vehicles', label: 'Fleet Vehicles', resource: 'vehicles', icon: 'truck',
     fields: [
@@ -151,6 +154,18 @@ const FEATURES = [
       { name: 'region', label: 'Region', type: 'text' }
     ]
   },
+  { key: 'charger-queue-forecast', label: 'Charger Queue Forecast', resource: 'charger-queue-forecast', icon: 'zap',
+    fields: [
+      { name: 'depot_name', label: 'Depot Name', type: 'text', required: true },
+      { name: 'forecast_window', label: 'Forecast Window', type: 'text' },
+      { name: 'queued_vehicles', label: 'Queued Vehicles', type: 'number' },
+      { name: 'available_ports', label: 'Available Ports', type: 'number' },
+      { name: 'peak_wait_minutes', label: 'Peak Wait Minutes', type: 'number' },
+      { name: 'overload_risk', label: 'Overload Risk', type: 'select', options: ['low','medium','high','critical'] },
+      { name: 'status', label: 'Status', type: 'select', options: ['normal','stagger_departures','add_mobile_charger','offline'] }
+    ],
+    cardFields: ['depot_name','forecast_window','queued_vehicles','available_ports','overload_risk','status'],
+    tableFields: ['depot_name','forecast_window','queued_vehicles','available_ports','peak_wait_minutes','overload_risk','status'] },
   { key: 'transition-plans', label: 'Transition Plans', resource: 'transition-plans', icon: 'trending-up',
     fields: [
       { name: 'name', label: 'Plan Name', type: 'text', required: true },
@@ -353,6 +368,9 @@ function App() {
         />
         <div className="main-content">
           <Routes>
+        <Route path="/codex/custom-viz" element={<CodexCustomVizFeature />} />
+        <Route path="/codex/operations" element={<CodexOperationsFeature />} />
+
             <Route path="/custom-views" element={<CustomViewsPage />} />
             <Route path="*" element={
               <>
