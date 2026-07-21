@@ -4,6 +4,9 @@ const cors = require('cors');
 const { Pool } = require('pg');
 const rateLimiter = require('./middleware/rateLimiter');
 
+if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required');
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) throw new Error('JWT_SECRET must contain at least 32 characters');
+
 const app = express();
 const PORT = process.env.BACKEND_PORT || 4000;
 
@@ -51,19 +54,13 @@ app.use('/api/supply-chain-analysis', require('./routes/supplyChainAnalysis'));
 app.use('/api/sustainability-report', require('./routes/sustainabilityReport'));
 app.use('/api/financing-options', require('./routes/financingOptions'));
 app.use('/api/charger-queue-forecast', require('./routes/chargerQueueForecast'));
+app.use('/api/governed-electrification-plans', require('./routes/governedPlans'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 // Custom Views — 4 synthesized fleet-electrification endpoints
 app.use('/api/custom-views', require('./routes/customViews'));
 
-
-// === Batch 03 Gaps & Frontend Mounts ===
-try {
-  const _batch03 = require('../routes/batch03Gaps');
-  if (typeof authenticateToken === 'function') app.use('/api', authenticateToken, _batch03);
-  else app.use('/api', _batch03);
-} catch (_e) { /* batch03 gap routes optional */ }
 
 app.listen(PORT, () => {
   console.log(`Backend running on port ${PORT}`);
