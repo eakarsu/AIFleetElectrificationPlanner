@@ -51,7 +51,8 @@ router.post('/chat', auth, async (req, res) => {
     const fullPrompt = context ? `Context: ${context}\n\nQuestion: ${userPrompt}` : userPrompt;
 
     const response = await callOpenRouter(fullPrompt, systemPrompt);
-    const content = response.choices?.[0]?.message?.content || 'No response generated';
+    const content = response.choices?.[0]?.message?.content;
+    if (!content) throw new Error('OpenRouter returned an empty response');
 
     res.json({
       response: content,
