@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Sparkles, DollarSign, Zap, TrendingUp, Send, Map, GraduationCap, Wrench, Leaf } from 'lucide-react';
 import api from '../services/api';
 import AIResponseDisplay from '../components/AIResponseDisplay';
+import AIFieldPresets, { completeExample } from './AIFieldPresets';
 
 /**
  * Surfaces structured AI endpoints that don't go through /chat:
@@ -106,6 +107,50 @@ export default function AIPlanner() {
     region: '',
     reporting_year: new Date().getFullYear(),
   });
+
+  const formConfig = {
+    'cost-optimize': [costForm, setCostForm], 'charging-network': [chargingForm, setChargingForm],
+    'transition-roadmap': [roadmapForm, setRoadmapForm], 'route-optimize': [routeForm, setRouteForm],
+    'driver-train': [driverForm, setDriverForm], 'maintenance-predict': [maintForm, setMaintForm],
+    'carbon-impact': [carbonForm, setCarbonForm]
+  };
+  const scenarioSamples = {
+    'cost-optimize': [
+      { label: 'Urban vans', values: { fleet_size: 24, annual_miles_per_vehicle: 22000, fuel_price: 3.8, electricity_rate: 0.14, horizon_years: 5, region: 'Northeast US' } },
+      { label: 'Regional trucks', values: { fleet_size: 60, annual_miles_per_vehicle: 42000, fuel_price: 4.15, electricity_rate: 0.18, horizon_years: 7, region: 'California' } },
+      { label: 'Municipal fleet', values: { fleet_size: 115, annual_miles_per_vehicle: 14000, fuel_price: 3.5, electricity_rate: 0.12, horizon_years: 10, region: 'Midwest US' } }
+    ],
+    'charging-network': [
+      { label: 'Small depot', values: { depot_name: 'North Depot', fleet_size: 18, daily_kwh_per_vehicle: 45, overnight_window_hours: 10, utility_demand_charge: 14, grid_capacity_kw: 250 } },
+      { label: 'Delivery hub', values: { depot_name: 'Central Delivery Hub', fleet_size: 70, daily_kwh_per_vehicle: 85, overnight_window_hours: 8, utility_demand_charge: 22, grid_capacity_kw: 850 } },
+      { label: 'Regional yard', values: { depot_name: 'West Yard', fleet_size: 35, daily_kwh_per_vehicle: 110, overnight_window_hours: 7, utility_demand_charge: 18, grid_capacity_kw: 500 } }
+    ],
+    'transition-roadmap': [
+      { label: 'Delivery vans', values: { fleet_size: 40, current_ev_count: 4, target_ev_percentage: 75, timeline_years: 5, annual_budget: 600000, industry: 'Parcel delivery', constraints: 'One depot has limited grid capacity; replace vehicles at normal retirement.' } },
+      { label: 'Municipal fleet', values: { fleet_size: 120, current_ev_count: 15, target_ev_percentage: 60, timeline_years: 7, annual_budget: 1800000, industry: 'Municipal services', constraints: 'Public procurement cycles and winter range requirements.' } },
+      { label: 'Service technicians', values: { fleet_size: 28, current_ev_count: 0, target_ev_percentage: 90, timeline_years: 4, annual_budget: 450000, industry: 'Field service', constraints: 'Home charging access varies among drivers.' } }
+    ],
+    'route-optimize': [
+      { label: 'City delivery', values: { origin: 'Brooklyn, NY', destination: 'Queens, NY', vehicle_model: 'Electric delivery van', battery_capacity_kwh: 75, starting_battery_percent: 85, total_distance_miles: 38, avg_speed_mph: 25, load_weight_lbs: 900, weather: 'clear', terrain: 'urban' } },
+      { label: 'Regional trip', values: { origin: 'Boston, MA', destination: 'Providence, RI', vehicle_model: 'Electric medium-duty truck', battery_capacity_kwh: 140, starting_battery_percent: 90, total_distance_miles: 55, avg_speed_mph: 50, load_weight_lbs: 3000, weather: 'rain', terrain: 'mixed' } },
+      { label: 'Winter service', values: { origin: 'Albany, NY', destination: 'Schenectady, NY', vehicle_model: 'Electric service van', battery_capacity_kwh: 80, starting_battery_percent: 75, total_distance_miles: 45, avg_speed_mph: 35, load_weight_lbs: 1200, weather: 'snow', terrain: 'mixed' } }
+    ],
+    'driver-train': [
+      { label: 'New EV driver', values: { driver_name: 'Alex Morgan', experience_months: 2, avg_kwh_per_mile: 0.42, hard_braking_events_per_100mi: 8, hard_accel_events_per_100mi: 7, avg_regen_use_percent: 38, route_types: 'urban, suburban', weak_areas: 'regenerative braking, smooth acceleration' } },
+      { label: 'Highway driver', values: { driver_name: 'Jordan Lee', experience_months: 18, avg_kwh_per_mile: 0.37, hard_braking_events_per_100mi: 3, hard_accel_events_per_100mi: 5, avg_regen_use_percent: 55, route_types: 'highway, regional', weak_areas: 'speed management, range planning' } },
+      { label: 'Urban driver', values: { driver_name: 'Taylor Reed', experience_months: 9, avg_kwh_per_mile: 0.31, hard_braking_events_per_100mi: 6, hard_accel_events_per_100mi: 4, avg_regen_use_percent: 62, route_types: 'urban', weak_areas: 'anticipatory braking, efficient HVAC use' } }
+    ],
+    'maintenance-predict': [
+      { label: 'Delivery van', values: { vehicle_model: 'Electric delivery van', mileage: 52000, age_months: 30, battery_health_percent: 91, avg_kwh_per_mile: 0.34, cycles_completed: 370, last_service_date: '2026-08-15', operating_climate: 'Temperate', duty_cycle: 'urban delivery' } },
+      { label: 'High mileage truck', values: { vehicle_model: 'Electric medium-duty truck', mileage: 114000, age_months: 48, battery_health_percent: 84, avg_kwh_per_mile: 0.72, cycles_completed: 790, last_service_date: '2026-07-20', operating_climate: 'Hot summers', duty_cycle: 'regional delivery' } },
+      { label: 'Cold climate van', values: { vehicle_model: 'Electric service van', mileage: 31000, age_months: 20, battery_health_percent: 95, avg_kwh_per_mile: 0.39, cycles_completed: 220, last_service_date: '2026-09-01', operating_climate: 'Cold winters', duty_cycle: 'mixed' } }
+    ],
+    'carbon-impact': [
+      { label: 'Mixed fleet', values: { fleet_size: 50, ice_vehicle_count: 30, ev_vehicle_count: 20, annual_miles_per_vehicle: 25000, avg_mpg_ice: 18, avg_kwh_per_mile_ev: 0.35, grid_renewable_percent: 25, region: 'Northeast US', reporting_year: 2026 } },
+      { label: 'EV pilot', values: { fleet_size: 24, ice_vehicle_count: 20, ev_vehicle_count: 4, annual_miles_per_vehicle: 18000, avg_mpg_ice: 22, avg_kwh_per_mile_ev: 0.3, grid_renewable_percent: 40, region: 'California', reporting_year: 2026 } },
+      { label: 'Large transition', values: { fleet_size: 120, ice_vehicle_count: 45, ev_vehicle_count: 75, annual_miles_per_vehicle: 32000, avg_mpg_ice: 16, avg_kwh_per_mile_ev: 0.48, grid_renewable_percent: 60, region: 'Midwest US', reporting_year: 2026 } }
+    ]
+  };
 
   const submit = async (path, payload) => {
     setLoading(true);
@@ -326,6 +371,7 @@ export default function AIPlanner() {
       </div>
 
       <div style={{ background: 'white', borderRadius: '12px', border: '1px solid var(--border)', padding: '24px' }}>
+        <AIFieldPresets fields={Object.keys(formConfig[tab][0]).map(name => ({ name, type: typeof formConfig[tab][0][name] === 'number' ? 'number' : 'text' }))} samples={scenarioSamples[tab]} context={tab} disabled={loading} onFill={(sample, index) => formConfig[tab][1](previous => ({ ...previous, ...completeExample(Object.keys(previous).map(name => ({ name, type: typeof previous[name] === 'number' ? 'number' : 'text' })), sample, index, tab, previous) }))} />
         {tab === 'cost-optimize' && renderCostForm()}
         {tab === 'charging-network' && renderChargingForm()}
         {tab === 'transition-roadmap' && renderRoadmapForm()}

@@ -91,7 +91,7 @@ router.get('/tco-heatmap', auth, async (req, res) => {
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 7 }, (_, i) => currentYear + i);
 
-    const seed = vehicles.length ? vehicles.slice(0, 8) : [
+    const seed = vehicles.length ? vehicles : [
       { id: 1, make: 'Tesla', model: 'Model 3', year: 2024, type: 'Sedan' },
       { id: 2, make: 'Tesla', model: 'Model Y', year: 2024, type: 'SUV' },
       { id: 3, make: 'Ford',  model: 'F-150 Lightning', year: 2024, type: 'Truck' },

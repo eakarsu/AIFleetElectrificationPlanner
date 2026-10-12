@@ -24,13 +24,19 @@ async function request(path, options = {}) {
   return data;
 }
 
+export function recordRows(payload) {
+  const rows = Array.isArray(payload) ? payload : payload?.data;
+  if (!Array.isArray(rows)) throw new Error('The record API returned an invalid list response');
+  return rows;
+}
+
 const api = {
   // Auth
   login: (email, password) => request('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
   register: (data) => request('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
 
   // Generic CRUD
-  getAll: (resource) => request(`/${resource}`),
+  getAll: (resource) => request(`/${resource}`).then(recordRows),
   getOne: (resource, id) => request(`/${resource}/${id}`),
   create: (resource, data) => request(`/${resource}`, { method: 'POST', body: JSON.stringify(data) }),
   update: (resource, id, data) => request(`/${resource}/${id}`, { method: 'PUT', body: JSON.stringify(data) }),

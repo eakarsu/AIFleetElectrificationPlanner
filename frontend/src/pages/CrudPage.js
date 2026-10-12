@@ -1,11 +1,15 @@
+import RecordDialog from './RecordDialog';
+import { AIResultValue } from './AIResultView';
+import AIFieldPresets, { completeExample } from './AIFieldPresets';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Plus, Grid3X3, List, Sparkles, X, Edit3, Trash2, ArrowLeft, ChevronRight } from 'lucide-react';
-import api from '../services/api';
+import api, { recordRows } from '../services/api';
 import AIResponseDisplay from '../components/AIResponseDisplay';
 
 export default function CrudPage({ feature }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [view, setView] = useState('cards');
   const [search, setSearch] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
@@ -17,12 +21,18 @@ export default function CrudPage({ feature }) {
   const [aiResult, setAiResult] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [recordOptions, setRecordOptions] = useState({});
+  const aiFields = feature.aiFields.map(field => {
+    if (!/_id$/.test(field.name)) return field;
+    return { ...field, requiresExistingRecord: true, options: recordOptions[field.name] || [] };
+  });
 
   const loadItems = useCallback(() => {
     setLoading(true);
+    setLoadError('');
     api.getAll(feature.resource)
-      .then(data => setItems(Array.isArray(data) ? data : []))
-      .catch(() => setItems([]))
+      .then(data => setItems(recordRows(data)))
+      .catch(error => { setItems([]); setLoadError(error.message || 'Unable to load records'); })
       .finally(() => setLoading(false));
   }, [feature.resource]);
 
@@ -90,6 +100,8 @@ export default function CrudPage({ feature }) {
   };
 
   const handleAI = async () => {
+    const missing = aiFields.find(field => field.requiresExistingRecord && !field.options.some(id => String(id) === String(aiFormData[field.name])));
+    if (missing) { setAiResult({ error: `Select an existing ${missing.label} before generating.` }); return; }
     setAiLoading(true);
     setAiResult(null);
     try {
@@ -99,6 +111,19 @@ export default function CrudPage({ feature }) {
       setAiResult({ error: err.message });
     } finally {
       setAiLoading(false);
+    }
+  };
+
+  const openAI = async () => {
+    setShowAI(true);
+    const references = [...new Set(feature.aiFields.filter(field => /_id$/.test(field.name)).map(field => field.name))];
+    for (const name of references) {
+      const resource = name === 'vehicle_id' ? 'vehicles' : name === 'route_id' ? 'routes' : null;
+      if (!resource) continue;
+      try {
+        const records = await api.getAll(resource);
+        setRecordOptions(previous => ({ ...previous, [name]: recordRows(records).map(record => record.id).filter(id => id !== null && id !== undefined) }));
+      } catch (_) { setRecordOptions(previous => ({ ...previous, [name]: [] })); }
     }
   };
 
@@ -118,9 +143,9 @@ export default function CrudPage({ feature }) {
   };
 
   // Detail View
-  if (selectedItem) {
+  if (selectedItem && !showForm) {
     return (
-      <div>
+      <RecordDialog title={feature.label} onClose={() => setSelectedItem(null)}><div>
         <div className="page-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button className="btn btn-secondary btn-sm" onClick={() => setSelectedItem(null)}>
@@ -157,7 +182,7 @@ export default function CrudPage({ feature }) {
                     ) : f.name === 'priority' || f.name === 'penalty_risk' ? (
                       <span className={`badge badge-${selectedItem[f.name]}`}>{selectedItem[f.name]}</span>
                     ) : (
-                      formatValue(f.name, selectedItem[f.name])
+                      selectedItem[f.name] && typeof selectedItem[f.name] === 'object' ? <AIResultValue value={selectedItem[f.name]} /> : typeof selectedItem[f.name] === 'string' && /^[\s]*[\[{]/.test(selectedItem[f.name]) ? <AIResultValue value={selectedItem[f.name]} /> : formatValue(f.name, selectedItem[f.name])
                     )}
                   </span>
                 </div>
@@ -174,7 +199,7 @@ export default function CrudPage({ feature }) {
 
         {/* Form Modal */}
         {showForm && renderFormModal()}
-      </div>
+      </div></RecordDialog>
     );
   }
 
@@ -239,16 +264,17 @@ export default function CrudPage({ feature }) {
           <div className="modal-body">
             {!aiResult && (
               <>
-                {feature.aiFields.map(f => (
+                <AIFieldPresets fields={aiFields} context={feature.aiLabel} disabled={aiLoading} onFill={(sample, index) => setAiFormData(previous => ({ ...previous, ...completeExample(aiFields, sample, index, feature.aiLabel, previous) }))} />
+                {aiFields.map(f => (
                   <div key={f.name} className="form-group">
                     <label>{f.label}</label>
-                    <input
+                    {f.requiresExistingRecord ? <select value={aiFormData[f.name] || ''} onChange={e => setAiFormData({ ...aiFormData, [f.name]: e.target.value })}><option value="">Select an existing {f.label}</option>{f.options.map(id => <option key={id} value={id}>{id}</option>)}</select> : <input
                       type={f.type}
                       value={aiFormData[f.name] || ''}
                       onChange={e => setAiFormData({ ...aiFormData, [f.name]: f.type === 'number' ? Number(e.target.value) : e.target.value })}
                       placeholder={f.placeholder || `Enter ${f.label.toLowerCase()}`}
                       step={f.type === 'number' ? 'any' : undefined}
-                    />
+                    />}
                   </div>
                 ))}
                 <button className="btn btn-ai btn-lg" onClick={handleAI} disabled={aiLoading} style={{ width: '100%', marginTop: '8px' }}>
@@ -315,7 +341,7 @@ export default function CrudPage({ feature }) {
               <List size={14} />
             </button>
           </div>
-          <button className="btn btn-ai" onClick={() => setShowAI(true)}>
+          <button className="btn btn-ai" onClick={openAI}>
             <Sparkles size={16} /> {feature.aiLabel}
           </button>
           <button className="btn btn-primary" onClick={openNew}>
@@ -326,6 +352,8 @@ export default function CrudPage({ feature }) {
 
       {loading ? (
         <div className="loading-spinner"><div className="spinner"></div><span>Loading...</span></div>
+      ) : loadError ? (
+        <div className="empty-state" role="alert"><h3>Unable to load {feature.label}</h3><p>{loadError}</p></div>
       ) : filtered.length === 0 ? (
         <div className="empty-state">
           <h3>No {feature.label} found</h3>
@@ -380,7 +408,7 @@ export default function CrudPage({ feature }) {
             </thead>
             <tbody>
               {filtered.map(item => (
-                <tr key={item.id} onClick={() => setSelectedItem(item)}>
+                <tr key={item.id} onClick={() => setSelectedItem(item)} tabIndex={0} onKeyDown={(event) => { if ((event.key === 'Enter' || event.key === ' ') && event.target === event.currentTarget) { event.preventDefault(); (() => setSelectedItem(item))(event); } }}>
                   <td>{item.id}</td>
                   {feature.tableFields.map(f => (
                     <td key={f}>
@@ -391,7 +419,7 @@ export default function CrudPage({ feature }) {
                       )}
                     </td>
                   ))}
-                  <td>
+                  <td onClick={(event) => event.stopPropagation()}>
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <button className="btn btn-sm btn-secondary" onClick={e => { e.stopPropagation(); openEdit(item); }}>
                         <Edit3 size={12} />

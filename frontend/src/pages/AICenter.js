@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Sparkles, Send, X, Truck, Map, Zap, DollarSign, Battery, Activity, TrendingUp, Leaf, Wrench, Users, PieChart, Shield, Navigation, BarChart2, MessageCircle } from 'lucide-react';
 import api from '../services/api';
 import AIResponseDisplay from '../components/AIResponseDisplay';
+import AIFieldPresets from './AIFieldPresets';
 
 const ICONS = {
   'truck': Truck, 'map': Map, 'zap': Zap, 'dollar-sign': DollarSign,
@@ -38,7 +39,8 @@ export default function AICenter() {
       setHistory(prev => [...prev, {
         feature: selectedFeature?.name || 'General Advisor',
         prompt: prompt,
-        timestamp: new Date().toLocaleTimeString()
+        timestamp: new Date().toLocaleTimeString(),
+        response: res
       }]);
     } catch (err) {
       setResult({ error: err.message });
@@ -99,6 +101,11 @@ export default function AICenter() {
         </div>
 
         <div style={{ padding: '24px' }}>
+          <AIFieldPresets fields={[{ name: 'context' }, { name: 'prompt' }]} context={selectedFeature?.name || 'fleet electrification'} disabled={loading} samples={[
+            { label: 'Depot charging', values: { context: 'A 40-vehicle urban delivery fleet operates from one depot with an eight-hour overnight charging window and a limited grid connection.', prompt: 'How should we phase depot charging and identify the grid data still needed?' } },
+            { label: 'Fleet transition', values: { context: 'A regional delivery operator has 65 mixed-duty vehicles and a five-year replacement cycle. Capital spending is capped each year.', prompt: 'Which vehicle groups should transition to EVs first, and what risks should the roadmap address?' } },
+            { label: 'Cost review', values: { context: 'A 25-van fleet drives roughly 22,000 miles per vehicle annually. Fuel and electricity rates vary by location.', prompt: 'What inputs and assumptions are needed to compare EV and ICE total cost of ownership?' } }
+          ]} onFill={(sample) => { setContext(sample.values.context); setPrompt(sample.values.prompt); }} />
           <div className="form-group">
             <label>Context (optional)</label>
             <textarea
@@ -170,6 +177,7 @@ export default function AICenter() {
                 {h.prompt.length > 100 ? h.prompt.slice(0, 100) + '...' : h.prompt}
               </div>
               <span style={{ color: 'var(--text-light)', whiteSpace: 'nowrap' }}>{h.timestamp}</span>
+              <AIResponseDisplay result={h.response} />
             </div>
           ))}
         </div>

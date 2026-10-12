@@ -2,6 +2,7 @@
 // Auto-generated frontend page (lean v0). Wires Custom Feature Suggestions
 // and Gap endpoints (AI counterparts + non-AI features) to backend routes.
 import React, { useState } from 'react';
+import AIResultView from './AIResultView';
 
 const API_BASE = (typeof process !== 'undefined' && process.env && process.env.REACT_APP_API_URL) || 'http://localhost:4000/api';
 
@@ -39,15 +40,15 @@ export default function Batch03Features() {
   const sampleRequests = [
       {
           "label": "Scenario",
-          "value": "Run Batch03 Features for a realistic customer case.\nContext: a team needs a practical recommendation based on incomplete operating data.\nGoal: identify the best action, key risks, missing information, and expected business impact.\nReturn: summary, prioritized action plan, assumptions, and follow-up questions."
+          "value": "Assess a 40-vehicle urban delivery fleet converting 15 vans to EVs.\nContext: one depot has an eight-hour overnight charging window and grid capacity is unconfirmed.\nGoal: identify the best action, key risks, missing information, and expected business impact.\nReturn: summary, prioritized action plan, assumptions, and follow-up questions."
       },
       {
           "label": "Data sample",
-          "value": "Analyze this Batch03 Features data sample.\nInput records:\n- Record 1: urgent, customer impact high, owner unassigned\n- Record 2: medium priority, blocked by missing data\n- Record 3: recurring issue, automation opportunity\nReturn structured findings, anomalies, recommendations, and confidence."
+          "value": "Analyze an illustrative fleet operations sample.\nInput records:\n- Record 1: urgent, customer impact high, owner unassigned\n- Record 2: medium priority, blocked by missing data\n- Record 3: recurring issue, automation opportunity\nReturn structured findings, anomalies, recommendations, and confidence."
       },
       {
           "label": "Executive review",
-          "value": "Prepare an executive review for Batch03 Features.\nAudience: business owner, operations lead, and implementation team.\nInclude impact, risk, estimated effort, decision points, and a concise next-step plan."
+          "value": "Prepare an executive review of a 60-truck fleet electrification plan.\nAudience: business owner, operations lead, and implementation team.\nInclude impact, risk, estimated effort, decision points, and a concise next-step plan."
       }
   ];
 
@@ -121,11 +122,7 @@ export default function Batch03Features() {
             </button>
           </div>
           {error && (<div style={{ marginTop: 12, padding: 10, background: '#fee2e2', color: '#991b1b', borderRadius: 4, fontSize: 13 }}>{error}</div>)}
-          {results[current.slug] && (
-            <pre style={{ marginTop: 12, padding: 10, background: '#0b1020', color: '#cbd5e1', borderRadius: 4, overflow: 'auto', maxHeight: 360, fontSize: 12 }}>
-              {typeof results[current.slug] === 'string' ? results[current.slug] : JSON.stringify(results[current.slug], null, 2)}
-            </pre>
-          )}
+          {results[current.slug] && <AIResultView response={results[current.slug]} title={current.label} />}
         </div>
       )}
     </div>
