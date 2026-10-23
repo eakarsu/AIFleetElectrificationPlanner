@@ -56,6 +56,7 @@ app.use('/api/financing-options', require('./routes/financingOptions'));
 app.use('/api/charger-queue-forecast', require('./routes/chargerQueueForecast'));
 app.use('/api/governed-electrification-plans', require('./routes/governedPlans'));
 
+app.use('/api/tasks', require('./routes/tasks').createTasksRouter(require('./middleware/auth')));
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 // Custom Views — 4 synthesized fleet-electrification endpoints
